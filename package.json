@@ -2,7 +2,7 @@
   "name": "dsh-ui",
   "version": "0.1.0",
   "description": "Cross-platform desktop GUI for DeepSeek Harness (dsh). Electron shell that hosts the official dsh web UI.",
-  "main": "dist/main.js",
+  "main": "dist/main/main.js",
   "author": "chengoak",
   "license": "MIT",
   "private": true,

@@ -10,5 +10,5 @@
     "jsx": "preserve",
     "types": ["vite/client"]
   },
-  "include": ["src/renderer/**/*", "src/shared/**/*"]
+  "include": ["src/renderer/**/*", "src/shared/**/*", "vite.config.ts"]
 }

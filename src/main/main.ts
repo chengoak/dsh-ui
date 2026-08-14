@@ -10,12 +10,10 @@
  *   4. SIGTERM the child when the window closes.
  */
 import { app, BrowserWindow, shell } from 'electron'
-import { fileURLToPath } from 'node:url'
-import { dirname, join } from 'node:path'
-import { resolveDshBin } from './resolve-dsh.js'
-import { startDshWeb } from './dsh-process.js'
+import { join } from 'node:path'
+import { resolveDshBin } from './resolve-dsh'
+import { startDshWeb, type DshHandle } from './dsh-process'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
 const RENDERER_DIR = join(__dirname, '..', 'renderer')
 
 let mainWindow: BrowserWindow | null = null
@@ -29,7 +27,7 @@ async function createWindow(): Promise<void> {
     minHeight: 600,
     title: 'dsh',
     backgroundColor: '#1e1e1e',
-    show: false,
+    show: true,
     webPreferences: {
       preload: join(__dirname, '..', 'preload', 'preload.js'),
       contextIsolation: true,

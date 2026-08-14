@@ -15,7 +15,7 @@
  */
 import { spawn, type ChildProcess } from 'node:child_process'
 import { setTimeout as delay } from 'node:timers/promises'
-import http from 'node:http'
+import * as http from 'node:http'
 
 const READY_TIMEOUT_MS = 30_000
 const READY_POLL_MS = 250
