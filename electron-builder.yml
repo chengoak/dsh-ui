@@ -1,0 +1,46 @@
+appId: io.github.chengoak.dsh-ui
+productName: dsh
+copyright: Copyright © 2026 chengoak
+directories:
+  buildResources: build
+  output: release
+
+files:
+  - dist/**/*
+  - package.json
+
+# Renderer is loaded via loadURL() pointing at the dsh web server (not via
+# file://), so the bundled renderer/ is only used as a fallback loading page.
+# Excluding the renderer dir from asar keeps the bundle small.
+asar: true
+asarUnpack:
+  - dist/renderer/**
+
+mac:
+  category: public.app-category.developer-tools
+  target:
+    - target: dmg
+      arch: [arm64, x64]
+  # No codesign configured; unsigned .dmg will produce a Gatekeeper warning.
+  # Add `identity` and `entitlements` here once you have a Developer ID cert.
+  hardenedRuntime: false
+  gatekeeperAssess: false
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  # No codesign configured; unsigned .exe will produce a SmartScreen warning.
+
+linux:
+  target:
+    - target: AppImage
+      arch: [x64]
+  category: Development
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+
+publish: null

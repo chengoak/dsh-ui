@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>dsh — dsh CLI not found</title>
+    <style>
+      :root { color-scheme: dark; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #1e1e1e; color: #e0e0e0;
+        display: flex; align-items: center; justify-content: center;
+        height: 100vh; margin: 0; padding: 24px; box-sizing: border-box;
+      }
+      .card {
+        max-width: 560px; background: #2a2a2a; border-radius: 12px;
+        padding: 32px; box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+      }
+      h1 { margin: 0 0 8px; font-size: 22px; color: #ff8a80; }
+      h2 { margin: 24px 0 8px; font-size: 15px; color: #9e9e9e; font-weight: 500; }
+      p { line-height: 1.6; color: #cfcfcf; }
+      code {
+        background: #1a1a1a; padding: 2px 6px; border-radius: 4px;
+        font-family: ui-monospace, "SF Mono", Menlo, monospace; color: #80cbc4;
+      }
+      pre {
+        background: #1a1a1a; padding: 12px 16px; border-radius: 6px;
+        overflow-x: auto; font-size: 13px; line-height: 1.5;
+      }
+      a { color: #64b5f6; text-decoration: none; }
+      a:hover { text-decoration: underline; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>dsh CLI not found</h1>
+      <p>
+        dsh-ui is a shell for the official
+        <a href="https://github.com/deepseek-ai/deepseek-harness" target="_blank" rel="noopener">DeepSeek Harness</a>
+        <code>dsh</code> command. It needs <code>dsh</code> installed and on your
+        <code>PATH</code> to start the agent.
+      </p>
+
+      <h2>Install dsh</h2>
+      <pre>npm install -g @deepseek-ai/dsh</pre>
+
+      <h2>Verify</h2>
+      <pre>dsh --version</pre>
+
+      <h2>Then restart dsh-ui</h2>
+      <p>Quit this window and reopen dsh-ui. It will find <code>dsh</code> and launch the agent.</p>
+
+      <h2>Custom path</h2>
+      <p>
+        If <code>dsh</code> is installed somewhere exotic, set the
+        <code>DSH_BIN</code> environment variable to the full path before
+        launching dsh-ui.
+      </p>
+    </div>
+  </body>
+</html>
