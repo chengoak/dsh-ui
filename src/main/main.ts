@@ -67,20 +67,34 @@ async function createWindow(): Promise<void> {
   await mainWindow.loadURL(`http://127.0.0.1:${dsh.port}/`)
 }
 
-app.whenReady().then(() => {
-  void createWindow()
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) void createWindow()
+// Single-instance lock. Defense in depth: even if dsh resolution ever
+// regressed and pointed back at this app's own executable, a spawned second
+// instance would immediately quit instead of starting another chain.
+const gotTheLock = app.requestSingleInstanceLock()
+if (!gotTheLock) {
+  app.quit()
+} else {
+  app.on('second-instance', () => {
+    if (!mainWindow) return
+    if (mainWindow.isMinimized()) mainWindow.restore()
+    mainWindow.focus()
   })
-})
 
-app.on('window-all-closed', () => {
-  dsh?.kill()
-  dsh = null
-  if (process.platform !== 'darwin') app.quit()
-})
+  app.whenReady().then(() => {
+    void createWindow()
+    app.on('activate', () => {
+      if (BrowserWindow.getAllWindows().length === 0) void createWindow()
+    })
+  })
 
-app.on('before-quit', () => {
-  dsh?.kill()
-  dsh = null
-})
+  app.on('window-all-closed', () => {
+    dsh?.kill()
+    dsh = null
+    if (process.platform !== 'darwin') app.quit()
+  })
+
+  app.on('before-quit', () => {
+    dsh?.kill()
+    dsh = null
+  })
+}

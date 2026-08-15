@@ -34,10 +34,24 @@ export function startDshWeb(dshBin: string): DshHandle {
   // `--port 0` would be ideal (let OS pick a free port), but dsh web
   // currently picks its own port from config / defaults. We do NOT pass
   // --port; we read whatever port dsh chose from its boot log.
-  const child = spawn(dshBin, ['web'], {
-    stdio: ['ignore', 'pipe', 'pipe'],
-    env: process.env,
-  })
+  //
+  // On Windows the resolved bin is normally a `.cmd` shim (npm installs
+  // `dsh.cmd`); .cmd/.bat files are not executable on their own, so route
+  // them through cmd.exe with the path quoted.
+  const isWindows = process.platform === 'win32'
+  const viaCmd = isWindows && /\.(cmd|bat)$/i.test(dshBin)
+  const child = viaCmd
+    ? spawn(process.env.ComSpec ?? 'cmd.exe', ['/d', '/s', '/c', `""${dshBin}" web"`], {
+        stdio: ['ignore', 'pipe', 'pipe'],
+        env: process.env,
+        // Node's default Windows arg-quoting would escape the inner quotes as
+        // \" which cmd.exe does not understand; pass the command line verbatim.
+        windowsVerbatimArguments: true,
+      })
+    : spawn(dshBin, ['web'], {
+        stdio: ['ignore', 'pipe', 'pipe'],
+        env: process.env,
+      })
 
   let port: number | null = null
   let readyResolve: () => void = () => {}
@@ -62,6 +76,13 @@ export function startDshWeb(dshBin: string): DshHandle {
   child.stdout?.on('data', onChunk)
   child.stderr?.on('data', (b: Buffer) => process.stderr.write(`[dsh!] ${b.toString('utf8')}`))
 
+  // Without this handler, a failed spawn (ENOENT/EINVAL, missing bin, ...)
+  // raises an unhandled 'error' event and crashes the main process.
+  child.on('error', (err) => {
+    process.stderr.write(`[dsh!] spawn error: ${err.message}\n`)
+    if (port === null) readyReject(err)
+  })
+
   child.on('exit', (code, signal) => {
     process.stdout.write(`[dsh] exited code=${code} signal=${signal}\n`)
     if (port === null) {
@@ -71,8 +92,14 @@ export function startDshWeb(dshBin: string): DshHandle {
 
   /** Poll the resolved URL until dsh actually answers 200 on `/`. */
   const waitReady = async (): Promise<void> => {
-    // First, wait for the URL to appear in stdout (or for dsh to exit).
-    await readyPromise
+    // The URL must appear within READY_TIMEOUT_MS; a child that never prints
+    // (spawn failed silently, dsh hung, ...) must not block the window forever.
+    await Promise.race([
+      readyPromise,
+      delay(READY_TIMEOUT_MS).then(() => {
+        throw new Error(`dsh web did not print its URL within ${READY_TIMEOUT_MS}ms`)
+      }),
+    ])
 
     const target = port
     if (target === null) {
