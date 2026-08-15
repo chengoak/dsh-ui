@@ -29,8 +29,7 @@ jobs:
             target: dist:win
             artifact_name: dsh-ui-win
             artifact_path: |
-              release/dsh-*.exe
-              release/dsh-*-setup.exe
+              release/*.exe
 
     steps:
       - uses: actions/checkout@v4
