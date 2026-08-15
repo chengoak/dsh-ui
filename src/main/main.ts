@@ -24,13 +24,46 @@ const GITHUB_URL = 'https://github.com/chengoak/dsh-ui'
 let mainWindow: BrowserWindow | null = null
 let dsh: DshHandle | null = null
 
-/** Standard application menu with a Help → GitHub item. */
+/**
+ * Application menu: standard File/View/Window/Help plus an Edit menu with
+ * find-in-page entries so Ctrl+F / F3 / Shift+F3 work (the default Electron
+ * menu and the `editMenu` role do NOT include Find).
+ */
 function installAppMenu(): void {
   const template: MenuItemConstructorOptions[] = []
   if (process.platform === 'darwin') template.push({ role: 'appMenu' })
   template.push(
     { role: 'fileMenu' },
-    { role: 'editMenu' },
+    {
+      label: 'Edit',
+      submenu: [
+        { role: 'undo' },
+        { role: 'redo' },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' },
+        { role: 'pasteAndMatchStyle' },
+        { role: 'delete' },
+        { type: 'separator' },
+        { role: 'selectAll' },
+        { type: 'separator' },
+        {
+          label: 'Find',
+          accelerator: 'CmdOrCtrl+F',
+          click: (_item, focusedWindow) => {
+            // Electron has no `find` menu role, and Chromium's find bar cannot
+            // be opened with an empty query on this build (findInPage('') hangs
+            // the main process / throws with options). Open it with a tab
+            // character instead: it renders as blank in the input and matches
+            // nothing, so the bar behaves exactly like Ctrl+F in a browser.
+            if (focusedWindow instanceof BrowserWindow) {
+              focusedWindow.webContents.findInPage('\t')
+            }
+          },
+        },
+      ],
+    },
     { role: 'viewMenu' },
     { role: 'windowMenu' },
     {
