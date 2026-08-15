@@ -75,11 +75,12 @@ add `identity` (mac) and `certificateFile` / `certificatePassword` (win) to
 ```
 dsh-ui (Electron)
 ├── main process
+│   ├── probe 127.0.0.1:3080    ← already-running dsh web? reuse it (loadURL, no child)
 │   ├── resolveDshBin()         ← which dsh / $DSH_BIN
 │   ├── startDshWeb()           ← spawn `dsh web`, parse URL from stdout
 │   ├── probe 127.0.0.1:port    ← confirm server actually answers
 │   └── BrowserWindow loadURL
-└── on quit → SIGTERM dsh
+└── on quit → SIGTERM dsh (only when this app spawned it)
 ```
 
 The dsh CLI prints a line like

@@ -1,5 +1,5 @@
 appId: io.github.chengoak.dsh-ui
-productName: dsh
+productName: dsh-ui
 copyright: Copyright © 2026 chengoak
 directories:
   buildResources: build

@@ -2,22 +2,51 @@
  * Electron main entry point.
  *
  * Lifecycle:
- *   1. Resolve the `dsh` binary (PATH or DSH_BIN env).
- *   2. If missing, open the BrowserWindow pointed at a "missing dsh" page
+ *   1. If a dsh web is already serving on 127.0.0.1:3080 (started manually or
+ *      by another dsh-ui), reuse it — load that URL directly, no child spawned,
+ *      nothing killed on quit.
+ *   2. Otherwise resolve the `dsh` binary (PATH or DSH_BIN env).
+ *   3. If missing, open the BrowserWindow pointed at a "missing dsh" page
  *      built into dist/renderer and let the user know.
- *   3. Otherwise spawn `dsh web` as a child, wait for the URL to appear,
+ *   4. Otherwise spawn `dsh web` as a child, wait for the URL to appear,
  *      then load that URL into the BrowserWindow.
- *   4. SIGTERM the child when the window closes.
+ *   5. SIGTERM the child when the window closes.
  */
-import { app, BrowserWindow, shell } from 'electron'
+import { app, BrowserWindow, Menu, shell, type MenuItemConstructorOptions } from 'electron'
 import { join } from 'node:path'
 import { resolveDshBin } from './resolve-dsh'
-import { startDshWeb, type DshHandle } from './dsh-process'
+import { startDshWeb, probe, DEFAULT_DSH_PORT, type DshHandle } from './dsh-process'
 
 const RENDERER_DIR = join(__dirname, '..', 'renderer')
 
+const GITHUB_URL = 'https://github.com/chengoak/dsh-ui'
+
 let mainWindow: BrowserWindow | null = null
 let dsh: DshHandle | null = null
+
+/** Standard application menu with a Help → GitHub item. */
+function installAppMenu(): void {
+  const template: MenuItemConstructorOptions[] = []
+  if (process.platform === 'darwin') template.push({ role: 'appMenu' })
+  template.push(
+    { role: 'fileMenu' },
+    { role: 'editMenu' },
+    { role: 'viewMenu' },
+    { role: 'windowMenu' },
+    {
+      role: 'help',
+      submenu: [
+        {
+          label: 'GitHub Repository',
+          click: () => {
+            void shell.openExternal(GITHUB_URL)
+          },
+        },
+      ],
+    },
+  )
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template))
+}
 
 async function createWindow(): Promise<void> {
   mainWindow = new BrowserWindow({
@@ -25,7 +54,7 @@ async function createWindow(): Promise<void> {
     height: 800,
     minWidth: 800,
     minHeight: 600,
-    title: 'dsh',
+    title: 'dsh-ui',
     backgroundColor: '#1e1e1e',
     show: true,
     webPreferences: {
@@ -46,6 +75,14 @@ async function createWindow(): Promise<void> {
   mainWindow.on('closed', () => {
     mainWindow = null
   })
+
+  // Reuse an already-running dsh web (started manually, or by another dsh-ui)
+  // instead of spawning a duplicate: probe the default port first. A reused
+  // server is NOT owned by this app — we never kill it on quit.
+  if (await probe(DEFAULT_DSH_PORT)) {
+    await mainWindow.loadURL(`http://127.0.0.1:${DEFAULT_DSH_PORT}/`)
+    return
+  }
 
   const dshBin = resolveDshBin()
   if (!dshBin) {
@@ -81,6 +118,7 @@ if (!gotTheLock) {
   })
 
   app.whenReady().then(() => {
+    installAppMenu()
     void createWindow()
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) void createWindow()

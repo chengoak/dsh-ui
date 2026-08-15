@@ -20,6 +20,9 @@ import * as http from 'node:http'
 const READY_TIMEOUT_MS = 30_000
 const READY_POLL_MS = 250
 
+/** The port `dsh web` binds by default; also probed to detect a running server. */
+export const DEFAULT_DSH_PORT = 3080
+
 /** Match `http://127.0.0.1:1234` or `http://localhost:1234` in dsh stdout. */
 const URL_RE = /https?:\/\/(?:127\.0\.0\.1|localhost)(?::(\d+))?\b/
 
@@ -129,7 +132,12 @@ export function startDshWeb(dshBin: string): DshHandle {
   }
 }
 
-function probe(port: number): Promise<boolean> {
+/**
+ * One-shot check: does something answer 200 on `http://127.0.0.1:<port>/`?
+ * Used both by `waitReady` and by `main.ts` to detect an already-running
+ * dsh web that should be reused instead of spawning a second one.
+ */
+export function probe(port: number): Promise<boolean> {
   return new Promise((resolve) => {
     const req = http.get({ host: '127.0.0.1', port, path: '/', timeout: 1000 }, (res) => {
       res.resume()
