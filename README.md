@@ -1,5 +1,7 @@
 # dsh-ui
 
+[English](README.md) · [简体中文](README.zh-CN.md)
+
 Cross-platform desktop GUI for [DeepSeek Harness (`dsh`)](https://github.com/deepseek-ai/deepseek-harness).
 
 `dsh-ui` is a thin Electron shell. It does **not** reimplement the agent — it
