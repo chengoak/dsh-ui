@@ -117,6 +117,15 @@ src/
 electron-builder.yml      cross-platform packaging (mac/win/linux)
 ```
 
+## Acknowledgements / Trademarks
+
+This project is an unofficial community GUI wrapper. The DeepSeek name and
+dolphin/whale logo are trademarks of DeepSeek AI. The logo in `build/icon.*`
+is sourced from DeepSeek's public website and is used here for product
+identification under fair use; it is not an endorsement by DeepSeek AI.
+For official builds, swap `build/icon.*` for assets you have the right to
+ship.
+
 ## License
 
 MIT.
