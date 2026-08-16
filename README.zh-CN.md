@@ -42,7 +42,22 @@ npm install
 npm run dev
 ```
 
-`npm run dev` 会用 `tsc --watch` 跑 Electron 主进程，Vite 跑 renderer。Electron 窗口打开后会连到 renderer dev server（一个加载页）—— 只有 fallback 页面会热更新；真正显示的 dsh Web UI 还是从你本地装的 `dsh` 来。
+`npm run dev` 会跑 [`scripts/dev.mjs`](scripts/dev.mjs)：
+1. `tsc --watch` 编译 Electron 主进程
+2. Vite dev server 跑 renderer（fallback 页面热更新）
+3. 两者就绪后启动 Electron，并把 `DSH_UI_DEV_VITE_URL` 传给它，让主进程从 Vite 加载 fallback 页面而不是 asar 里的版本。
+
+真正显示的 dsh Web UI 还是从你本地装的 `dsh` 来（默认 127.0.0.1:3080，跟打包版一致）。
+
+## 不用 dev wrapper 的开发方式
+
+```sh
+npm run build:main    # 单次 tsc
+npm run build:renderer  # 单次 vite build
+npm start             # build + electron .
+```
+
+只测打包后的路径、或者你的平台跑不了 `scripts/dev.mjs` 时用这个。
 
 ## 打包发布版
 

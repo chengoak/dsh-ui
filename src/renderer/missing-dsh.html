@@ -49,6 +49,14 @@
       <h2>Then restart dsh-ui</h2>
       <p>Quit this window and reopen dsh-ui. It will find <code>dsh</code> and launch the agent.</p>
 
+      <h2>Or just wait</h2>
+      <p>
+        This page will auto-recheck every <span id="count">10</span>s, or click
+        <button id="recheck" type="button">Recheck now</button>.
+        If <code>dsh</code> becomes available, the window will switch to the
+        agent automatically.
+      </p>
+
       <h2>Custom path</h2>
       <p>
         If <code>dsh</code> is installed somewhere exotic, set the
@@ -63,5 +71,23 @@
         for documentation, issues, and releases.
       </p>
     </div>
+    <script>
+      (function () {
+        var n = 10
+        var countEl = document.getElementById('count')
+        var btn = document.getElementById('recheck')
+        function tick() {
+          countEl.textContent = String(n)
+          if (n <= 0) {
+            window.location.reload()
+            return
+          }
+          n -= 1
+          setTimeout(tick, 1000)
+        }
+        btn.addEventListener('click', function () { window.location.reload() })
+        setTimeout(tick, 1000)
+      })()
+    </script>
   </body>
 </html>

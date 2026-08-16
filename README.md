@@ -47,10 +47,25 @@ npm install
 npm run dev
 ```
 
-`npm run dev` runs the Electron main in `tsc --watch` and the Vite renderer
-in dev mode. The Electron window opens against the renderer dev server (a
-loading page) for hot-reload of the fallback pages; the real dsh web UI is
-still loaded from your locally-installed `dsh`.
+`npm run dev` runs [`scripts/dev.mjs`](scripts/dev.mjs), which:
+1. `tsc --watch` for the Electron main process
+2. Vite dev server for the renderer (fallback pages hot-reload)
+3. Spawns Electron once both are ready, with `DSH_UI_DEV_VITE_URL` set so
+   `main.ts` loads the fallback pages from Vite instead of the asar.
+
+The real dsh Web UI is still loaded from your locally-installed `dsh`
+(127.0.0.1:3080 by default, just like the packaged build).
+
+## Develop (without the wrapper)
+
+```sh
+npm run build:main    # one-shot tsc
+npm run build:renderer  # one-shot vite build
+npm start             # build + electron .
+```
+
+Use this when you only want to test the packaged path, or when
+`scripts/dev.mjs` is not available on your platform.
 
 ## Build a release artifact
 

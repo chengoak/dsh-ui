@@ -18,6 +18,10 @@ import { resolveDshBin } from './resolve-dsh'
 import { startDshWeb, probe, DEFAULT_DSH_PORT, type DshHandle } from './dsh-process'
 
 const RENDERER_DIR = join(__dirname, '..', 'renderer')
+// In dev mode (npm run dev), scripts/dev.mjs sets DSH_UI_DEV_VITE_URL and
+// Vite serves the fallback pages with hot reload. In production we read the
+// static HTML files from the asar.
+const DEV_VITE_URL = process.env.DSH_UI_DEV_VITE_URL || ''
 
 const GITHUB_URL = 'https://github.com/chengoak/dsh-ui'
 
@@ -119,7 +123,7 @@ async function createWindow(): Promise<void> {
 
   const dshBin = resolveDshBin()
   if (!dshBin) {
-    await mainWindow.loadFile(join(RENDERER_DIR, 'missing-dsh.html'))
+    await loadFallback('missing-dsh.html')
     return
   }
 
@@ -130,11 +134,20 @@ async function createWindow(): Promise<void> {
     console.error('dsh failed to start:', err)
     dsh?.kill()
     dsh = null
-    await mainWindow.loadFile(join(RENDERER_DIR, 'dsh-failed.html'))
+    await loadFallback('dsh-failed.html')
     return
   }
 
   await mainWindow.loadURL(`http://127.0.0.1:${dsh.port}/`)
+}
+
+/** Load a fallback page from the asar in production, or from Vite in dev. */
+async function loadFallback(name: string): Promise<void> {
+  if (DEV_VITE_URL) {
+    await mainWindow!.loadURL(`${DEV_VITE_URL}/${name}`)
+  } else {
+    await mainWindow!.loadFile(join(RENDERER_DIR, name))
+  }
 }
 
 // Single-instance lock. Defense in depth: even if dsh resolution ever
