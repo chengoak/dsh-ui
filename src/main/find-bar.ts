@@ -70,8 +70,8 @@ const FIND_BAR_JS = `(() => {
   const st = bar.style
   st.position = 'fixed'; st.top = '8px'; st.right = '8px'; st.zIndex = '2147483647'
   st.display = 'flex'; st.alignItems = 'center'; st.gap = '6px'
-  st.background = '#2a2a2a'; st.border = '1px solid #555'; st.borderRadius = '8px'
-  st.padding = '6px 8px'; st.boxShadow = '0 4px 16px rgba(0,0,0,0.5)'
+  st.background = '#f5f5f5'; st.border = '1px solid #c8c8c8'; st.borderRadius = '8px'
+  st.padding = '6px 8px'; st.boxShadow = '0 4px 16px rgba(0,0,0,0.3)'
   st.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
   st.fontSize = '13px'
 
@@ -79,19 +79,21 @@ const FIND_BAR_JS = `(() => {
   input.placeholder = 'Find in page'
   input.spellcheck = false
   const is = input.style
-  is.width = '200px'; is.background = '#1e1e1e'; is.color = '#e0e0e0'
-  is.border = '1px solid #555'; is.borderRadius = '4px'; is.padding = '4px 6px'
+  is.width = '200px'; is.background = '#fff'; is.color = '#222'
+  is.border = '1px solid #aaa'; is.borderRadius = '4px'; is.padding = '4px 6px'
   is.outline = 'none'; is.fontSize = '13px'
+  input.addEventListener('focus', () => { input.style.borderColor = '#4a9eff' })
+  input.addEventListener('blur', () => { input.style.borderColor = '#aaa' })
 
   const count = document.createElement('span')
   count.textContent = '0/0'
-  count.style.color = '#9e9e9e'; count.style.minWidth = '36px'; count.style.textAlign = 'center'
+  count.style.color = '#666'; count.style.minWidth = '36px'; count.style.textAlign = 'center'
 
   const mkBtn = (label, title) => {
     const b = document.createElement('button')
     b.textContent = label; b.title = title
     const bs = b.style
-    bs.background = 'transparent'; bs.color = '#e0e0e0'; bs.border = 'none'
+    bs.background = 'transparent'; bs.color = '#444'; bs.border = 'none'
     bs.cursor = 'pointer'; bs.fontSize = '13px'; bs.padding = '2px 6px'; bs.borderRadius = '4px'
     return b
   }
