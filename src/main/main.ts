@@ -16,6 +16,7 @@ import { app, BrowserWindow, Menu, shell, type MenuItemConstructorOptions } from
 import { join } from 'node:path'
 import { resolveDshBin } from './resolve-dsh'
 import { startDshWeb, probe, DEFAULT_DSH_PORT, type DshHandle } from './dsh-process'
+import { attachFindBar, showFindBar, wireFindIpc } from './find-bar'
 
 const RENDERER_DIR = join(__dirname, '..', 'renderer')
 // In dev mode (npm run dev), scripts/dev.mjs sets DSH_UI_DEV_VITE_URL and
@@ -29,9 +30,9 @@ let mainWindow: BrowserWindow | null = null
 let dsh: DshHandle | null = null
 
 /**
- * Application menu: standard File/View/Window/Help plus an Edit menu with
- * find-in-page entries so Ctrl+F / F3 / Shift+F3 work (the default Electron
- * menu and the `editMenu` role do NOT include Find).
+ * Application menu: standard File/View/Window/Help plus an Edit menu with a
+ * Find entry (Ctrl+F) that opens the injected find-in-page overlay — the
+ * default Electron menu and the `editMenu` role do not include Find.
  */
 function installAppMenu(): void {
   const template: MenuItemConstructorOptions[] = []
@@ -55,15 +56,11 @@ function installAppMenu(): void {
         {
           label: 'Find',
           accelerator: 'CmdOrCtrl+F',
-          click: (_item, focusedWindow) => {
-            // Electron has no `find` menu role, and Chromium's find bar cannot
-            // be opened with an empty query on this build (findInPage('') hangs
-            // the main process / throws with options). Open it with a tab
-            // character instead: it renders as blank in the input and matches
-            // nothing, so the bar behaves exactly like Ctrl+F in a browser.
-            if (focusedWindow instanceof BrowserWindow) {
-              focusedWindow.webContents.findInPage('\t')
-            }
+          click: () => {
+            // Electron's findInPage() only highlights matches — there is no
+            // built-in find bar UI — so Ctrl+F shows our injected overlay bar.
+            const win = mainWindow
+            if (win) showFindBar(win)
           },
         },
       ],
@@ -107,6 +104,9 @@ async function createWindow(): Promise<void> {
     void shell.openExternal(url)
     return { action: 'deny' }
   })
+
+  // Forward find-in-page results to the injected find bar overlay.
+  attachFindBar(mainWindow)
 
   mainWindow.once('ready-to-show', () => mainWindow?.show())
   mainWindow.on('closed', () => {
@@ -164,6 +164,7 @@ if (!gotTheLock) {
   })
 
   app.whenReady().then(() => {
+    wireFindIpc()
     installAppMenu()
     void createWindow()
     app.on('activate', () => {

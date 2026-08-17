@@ -1,6 +1,6 @@
 {
   "name": "dsh-ui",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Cross-platform desktop GUI for DeepSeek Harness (dsh). Electron shell that hosts the official dsh web UI.",
   "main": "dist/main/main.js",
   "author": "chengoak",
